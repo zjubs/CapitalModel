@@ -1,0 +1,5 @@
+class,type,freq_sev,dist,param1,param2,param3
+Property,large,freq,poisson,5,,
+Marine,large,freq,poisson,2,,
+Property,large,sev,genpareto,0.5,100,50
+Marine,large,sev,genpareto,0.5,100,50
