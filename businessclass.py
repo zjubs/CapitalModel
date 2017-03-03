@@ -1,6 +1,7 @@
 from pandas import DataFrame
 import pandas
-from scipy.stats import genpareto,lognorm,poisson
+from scipy.stats import genpareto,lognorm,poisson, uniform
+
 
 class business_class():
     def __init__(self,name,grossprem,nsims):
@@ -14,7 +15,8 @@ class business_class():
         self.f = {
             'lognorm': lognorm.rvs,
             'poisson': poisson.rvs,
-            'genpareto': genpareto.rvs
+            'genpareto': genpareto.rvs,
+            'uniform': uniform.rvs
             }
             
     
@@ -40,6 +42,11 @@ class business_class():
     
     def apply_dependency(self):
         print ("a")  #reorder column in grosslosses, will need to reorder indices
+        
+    def apply_earning_pattern(self):
+        #apply earning pattern to loss to allocate to AYs
+        print("a")
+
 
 ################################
 
@@ -89,8 +96,44 @@ create_dist_losses('attr',"data/attr_params.csv",3)
 create_freq_sev_losses('large',"data/freqsev_params.csv",4)
 
 
+
+temp0 = DataFrame(uniform.rvs(0,1,size =10),columns =["blah"], index = list(range(1,11)))
+temp = DataFrame(uniform.rvs(0,1,size =10),columns =["blah"], index = list(range(1,11)))
+temp2 = np.argsort(temp['blah']) # get index
+
+temp3 = sorted(list(temp0['blah']), key =lambda x: list(temp2))
+
+temp3 = temp['Blah'].sort
+
+temp0= uniform.rvs(0,1,size =10)
+vals = uniform.rvs(0,1,size =10)
+order_index = np.argsort(temp0) 
+z = dict(zip(vals,order_index))
+
+temp = temp.sort_values('blah')
+lobs['Property'].grosslosses.reindex(temp.index, 'large', copy=False)
+
+lobs['Property'].grosslosses.reindex(temp.index, 'large', copy=False)
+lobs['Property'].grosslosses.apply(np.argsort, axis=0)
+lobs['Property'].grosslosses.apply(np.sort, axis=0)
+
+sorted(lobs['Property'].grosslosses['large'], key = lambda x: temp)
+
+sorted(lobs['Property'].grosslosses['large'].index, key = lambda x:list(temp['blah'].index).index(x))
+
+sorted(lobs['Property'].grosslosses['large'], key = lambda x:list(temp['blah']).index(x))
+
+
+sorted(lobs['Property'].grosslosses['large'].index, key = lambda x:np.argsort(temp['blah'])[x])
+np.argsort(temp['blah'])
+
+
+list_a = [100, 1, 10]
+list_b = [1, 10, 100]
+ 
+sorted_list_b_by_list_a = sorted(list_a, key=lambda x: list_a.index(x))
 # should be able to use multi index and pass in a list of column names
-# suggested index: YOA,loss_type:attr/large/cat, exposure_type: earned/unearned/new, peril: cat only
+# suggested index: YOA, AY, loss_type:attr/large/cat, exposure_type: earned/unearned/new, name/peril: cat only
 # should be flexible enough to work with less indices if necessary
 
 """
