@@ -121,6 +121,9 @@ sorted(lobs['Property'].grosslosses['large'], key = lambda x: temp)
 
 sorted(lobs['Property'].grosslosses['large'].index, key = lambda x:list(temp['blah'].index).index(x))
 
+
+
+
 sorted(lobs['Property'].grosslosses['large'], key = lambda x:list(temp['blah']).index(x))
 
 
@@ -144,6 +147,13 @@ large=read_params("data/freqsev_params.csv",4)
 
 # create attr losses
 for index,row in attr.iterrows():
+
+
+
+
+
+
+
     lobs[row['class']].sim_distr_losses(attr.loc[index,'dist'],attr.loc[index,'type'],attr.loc[index,'params'])
 
 

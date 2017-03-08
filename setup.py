@@ -19,3 +19,4 @@ temp[0] = temp[0,i]
 >>> i =np.argsort(perm)
 >>> i
 array([3, 0, 2, 1])
+    
