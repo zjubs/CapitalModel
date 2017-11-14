@@ -27,13 +27,14 @@ class business_class():
     def addlosses(self,loss_df,loss_labels):
         """
         appends losses ot grossloss
-        appends dictionary of labels as a list to list of grosslosslabels
+        appends a string based on dictionary of labels to grosslosslabels
         """
         
         print(self.grosslosses)
         print(loss_df)
         self.grosslosses = np.concatenate((self.grosslosses,loss_df),axis=0)
-        self.grosslosslabels.append([loss_labels])
+        loss_labels_str = '_'.join([ str(loss_labels[item]) for item in self.loss_keys])
+        self.grosslosslabels.append(loss_labels_str)
     
     def sim_distr_losses(self, distr,loss_labels,params=[]):
         # simulate attritional losses
@@ -74,6 +75,9 @@ class business_class():
 
 
 ################################
+lobs['Property'].grosslosses
+lobs['Property'].grosslosslabels
+
 
 def read_params(paramsfile_path,info_end_col):
     """
@@ -138,7 +142,30 @@ lobs = {row['class']: business_class(row['class'], row['grossPrem'],nsims) for i
 create_dist_losses("data/attr_params.csv",7,loss_indices)
 create_freq_sev_losses("data/freqsev_params.csv",8, loss_indices)
 
+
 ########################
+a = np.random.multivariate_normal([0,0,0],[[1,0.5,0.7],[0.5,1,0.5],[0.7,0.5,1]],1000)
+scipy.stats.spearmanr(a).correlation
+
+def create_dependent_rvs(matrix, nsims):
+    """
+    takes an input of a matrix in list format and outputs dependent N(0,1) RVs
+    Note this approach applies linear dependency
+    """
+    size = len(matrix)
+    rvs = np.random.multivariate_normal([0] * size ,matrix,nsims)
+    return rvs
+
+param_data_dep = pandas.read_csv(correl_matrix.csv)
+param_data_dep.iloc[:,6:].values.tolist()
+
+
+
+c = '_'.join([ str(a[item]) for item in b])
+b =['f','z']
+a = {'z':2,'f':4}
+
+
 
 temp  = lobs['Property'].grosslosses[1]
 a =[sum(i) for i in temp]
