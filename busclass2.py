@@ -12,30 +12,30 @@ class business_class():
         self.grosslosses=np.array([]).reshape(0,self.nsims)
         self.grosslosslabels= []
         self.netlosses=np.array([]).reshape(0,self.nsims)
-        
+
         self.loss_keys= ['YOA', 'AY', 'loss_type', 'exposure_type', 'loss_name']
         #YOA, AY, loss_type:attr/large/cat, exposure_type: earned/unearned/new, name/peril
         #z = dict.fromkeys(a)
-        
+
         self.f = {
             'lognorm': lognorm.rvs,
             'poisson': poisson.rvs,
             'genpareto': genpareto.rvs,
             'uniform': uniform.rvs
             }
-    
+
     def addlosses(self,loss_df,loss_labels):
         """
-        appends losses ot grossloss
+        appends loss to grossloss
         appends a string based on dictionary of labels to grosslosslabels
         """
-        
+
         print(self.grosslosses)
         print(loss_df)
         self.grosslosses = np.concatenate((self.grosslosses,loss_df),axis=0)
         loss_labels_str = '_'.join([ str(loss_labels[item]) for item in self.loss_keys])
         self.grosslosslabels.append(loss_labels_str)
-    
+
     def sim_distr_losses(self, distr,loss_labels,params=[]):
         # simulate attritional losses
         # maybe better called distribution
@@ -47,14 +47,14 @@ class business_class():
         distr_loss.sort() # sort ascending
         print('here')
         self.addlosses(distr_loss,loss_labels)
-    
+
     def sim_freqsev_losses(self, freq_distr, sev_distr,loss_labels,freq_params=[], sev_params=[]):
         # maybe better called freq_sev
         # need to feed in params and dist choice
         freq_sev_losses = np.array(self.f[freq_distr](*freq_params,size = self.nsims))
         #large_loss = np.array(self.f[sev_distr](*sev_params,size =self.nsims))
         freq_sev_losses_sev = np.array([ self.f[sev_distr](*sev_params,size = freq) for freq in freq_sev_losses]).reshape(1,self.nsims)
-        print(freq_sev_losses_sev)        
+        print(freq_sev_losses_sev)
         #order ascending
         self.temp = freq_sev_losses_sev
         a =[sum(i) for i in freq_sev_losses_sev[0]]
@@ -65,18 +65,18 @@ class business_class():
         self.temp2 = freq_sev_losses_sev
         #freq_sev_losses_agg = [ sum(losses) for losses in freq_sev_losses_sev]
         self.addlosses(freq_sev_losses_sev,loss_labels)
-    
+
     def apply_dependency(self):
         print ("a")  #reorder column in grosslosses, will need to reorder indices
-        
+
     def apply_earning_pattern(self):
         #apply earning pattern to loss to allocate to AYs
         print("a")
 
 
 ################################
-lobs['Property'].grosslosses
-lobs['Property'].grosslosslabels
+#lobs['Property'].grosslosses
+#lobs['Property'].grosslosslabels
 
 
 def read_params(paramsfile_path,info_end_col):
@@ -92,7 +92,7 @@ def read_params(paramsfile_path,info_end_col):
         clean_list = [x for x in row['params'] if str(x) != 'nan']
         param_data.set_value(index,'params', clean_list)
     return param_data
-    #param_data['labels'] = 
+    #param_data['labels'] =
 
 # loss indices shoul also be read into lob when initialising
 #input data must have samw order as loss indices
@@ -101,7 +101,7 @@ def read_params(paramsfile_path,info_end_col):
 #dict(zip(loss_indices,[1,2,3,4,5]))
 
 
-def create_dist_losses(paramsfile_path,info_end_col, loss_indices):
+def create_dist_losses(paramsfile_path,info_end_col, loss_indices,lobs):
     """
     takes a file as an input and the index of the last column before parameters
     and uses this information to read in data and simulate losses for the business_class
@@ -112,9 +112,9 @@ def create_dist_losses(paramsfile_path,info_end_col, loss_indices):
         lobs[row['class']].sim_distr_losses(loss_params.loc[index,'dist'],
         loss_params.loc[index,loss_indices[0]:loss_indices[-1]].to_dict(),
         loss_params.loc[index,'params']) #parans
-        
 
-def create_freq_sev_losses( paramsfile_path,info_end_col,loss_indices):
+
+def create_freq_sev_losses( paramsfile_path,info_end_col,loss_indices,lobs):
     """
     takes a file as an input and the index of the last column before parameters
     and uses this information to read in data and simulate losses for the business_class
@@ -131,70 +131,74 @@ def create_freq_sev_losses( paramsfile_path,info_end_col,loss_indices):
         lobs[item].sim_freqsev_losses(freq_class_inputs['dist'],sev_class_inputs['dist'],
                                   loss_label, freq_class_inputs['params'], sev_class_inputs['params'])
 
-nsims=10
-loss_indices = ['YOA', 'AY', 'loss_type', 'exposure_type', 'loss_name']
-# set up lobs
+def main():
 
-class_data = pandas.read_csv("data/classes.csv")
-lobs = {row['class']: business_class(row['class'], row['grossPrem'],nsims) for index,row in class_data.iterrows()}
+    nsims=10
+    loss_indices = ['YOA', 'AY', 'loss_type', 'exposure_type', 'loss_name']
 
+    # set up lobs
+    class_data = pandas.read_csv("data/classes.csv")
+    lobs = {row['class']: business_class(row['class'], row['grossPrem'],nsims) for index,row in class_data.iterrows()}
 
-create_dist_losses("data/attr_params.csv",7,loss_indices)
-create_freq_sev_losses("data/freqsev_params.csv",8, loss_indices)
+    create_dist_losses("data/attr_params.csv",7,loss_indices,lobs)
+    create_freq_sev_losses("data/freqsev_params.csv",8, loss_indices,lobs)
 
+if __name__ == "__main__":
+    main()
 
-########################
-a = np.random.multivariate_normal([0,0,0],[[1,0.5,0.7],[0.5,1,0.5],[0.7,0.5,1]],1000)
-scipy.stats.spearmanr(a).correlation
+#########################
+#a = np.random.multivariate_normal([0,0,0],[[1,0.5,0.7],[0.5,1,0.5],[0.7,0.5,1]],1000)
+#scipy.stats.spearmanr(a).correlation
 
-def create_dependent_rvs(matrix, nsims):
-    """
-    takes an input of a matrix in list format and outputs dependent N(0,1) RVs
-    Note this approach applies linear dependency
-    """
-    size = len(matrix)
-    rvs = np.random.multivariate_normal([0] * size ,matrix,nsims)
-    return rvs
+#def create_dependent_rvs(matrix, nsims):
+    #"""
+    #takes an input of a matrix in list format and outputs dependent N(0,1) RVs
+    #Note this approach applies linear dependency
+    #"""
+    #size = len(matrix)
+    #rvs = np.random.multivariate_normal([0] * size ,matrix,nsims)
+    #return rvs
 
-param_data_dep = pandas.read_csv(correl_matrix.csv)
-param_data_dep.iloc[:,6:].values.tolist()
+#param_data_dep = pandas.read_csv('data/correl_matrix.csv')
+#param_data_dep.iloc[:,6:].values.tolist()
 
-
-
-c = '_'.join([ str(a[item]) for item in b])
-b =['f','z']
-a = {'z':2,'f':4}
-
+#create_dependent_rvs(param_data_dep.iloc[:,6:].values.tolist(),10)
 
 
-temp  = lobs['Property'].grosslosses[1]
-a =[sum(i) for i in temp]
-temp[np.argsort(a)]
-
-temp0= uniform.rvs(0,1,size =10)
-vals = uniform.rvs(0,1,size =10)
-order_index = np.argsort(temp0) 
-z = dict(zip(vals,order_index))
+#c = '_'.join([ str(a[item]) for item in b])
+#b =['f','z']
+#a = {'z':2,'f':4}
 
 
 
-##############
-lobs['Property'].sim_freqsev_losses('poisson','genpareto','test_loss', [3], [0.5,100,50])
-a_freq_sev_losses = np.array(poisson.rvs(*[3],size=10))
-a_freq_sev_losses_sev = np.array([ genpareto.rvs(*[0.5,100,50],size = freq) for freq in freq_sev_losses]).reshape(1,10)
-self.freqsev = freq_sev_losses_sev
-freq_sev_losses_agg = [ sum(losses) for losses in freq_sev_losses_sev]
-self.addlosses(freq_sev_losses_agg,loss_name)
-##############
-business_class('trop', 100,nsims)
-lobs['Property'].sim_distr_losses(attr.loc[0,'dist'],attr.loc[0,'type'],attr.loc[0,'params']) 
+#temp  = lobs['Property'].grosslosses[1]
+#a =[sum(i) for i in temp]
+#temp[np.argsort(a)]
 
-attr = read_params("data/attr_params.csv",3)
-
-lobs['Property'].grosslosses
-lobs['Property'].test
-dtype = [('blah'), 'float']
+#temp0= uniform.rvs(0,1,size =10)
+#temp0
+#vals = uniform.rvs(0,1,size =10)
+#vals
+#order_index = np.argsort(temp0)
+#order_index
+#z = dict(zip(vals,order_index))
+#z
 
 
 
+###############
+#lobs['Property'].sim_freqsev_losses('poisson','genpareto','test_loss', [3], [0.5,100,50])
+#a_freq_sev_losses = np.array(poisson.rvs(*[3],size=10))
+#a_freq_sev_losses_sev = np.array([ genpareto.rvs(*[0.5,100,50],size = freq) for freq in freq_sev_losses]).reshape(1,10)
+#self.freqsev = freq_sev_losses_sev
+#freq_sev_losses_agg = [ sum(losses) for losses in freq_sev_losses_sev]
+#self.addlosses(freq_sev_losses_agg,loss_name)
+###############
+#business_class('trop', 100,nsims)
+#lobs['Property'].sim_distr_losses(attr.loc[0,'dist'],attr.loc[0,'type'],attr.loc[0,'params'])
 
+#attr = read_params("data/attr_params.csv",3)
+
+#lobs['Property'].grosslosses
+#lobs['Property'].test
+#dtype = [('blah'), 'float']

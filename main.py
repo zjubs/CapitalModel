@@ -1,13 +1,13 @@
 
-import businessclass as bc
+import busclass2 as bc
 import pandas
 
 def service_func():
     print('service func')
 
 if __name__ == '__main__':
-    
-    
+
+
     nsims=10
     # set up lobs
     class_data = pandas.read_csv("data/classes.csv")
